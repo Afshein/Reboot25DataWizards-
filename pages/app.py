@@ -45,14 +45,14 @@ def process_input(user_input, product):
     )
     return response.choices[0].message.content
 
-# Streamlit UI
-st.title("Banking Assistant - Choose your product and ask a question")
+# # Streamlit UI
+# st.title("Banking Assistant - Choose your product and ask a question")
 
-# User input to select a product (or use a specific question)
-user_input = st.text_input("Ask a question about a product or service:")
+# # User input to select a product (or use a specific question)
+# user_input = st.text_input("Ask a question about a product or service:")
 
-if user_input:
-    # Call the model and show the result
-    response = process_input(user_input)
-    st.write("Response from the assistant:")
-    st.write(response)
+# if user_input:
+#     # Call the model and show the result
+#     response = process_input(user_input)
+#     st.write("Response from the assistant:")
+#     st.write(response)

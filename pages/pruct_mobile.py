@@ -1,15 +1,17 @@
 import streamlit as st
 import random
+from app import process_input
 
 # --- Simulated user info ---
 user_name = "Alex"
 user_segment = "Family Planner"
 
+
 # --- Segment Mapping ---
 segment_map = {
-    "Young Ambitious": ["club-card", "savings-plan"],
-    "Family Planner": ["mortgage", "savings-plan", "club-card"],
-    "Lifestyle Seeker": ["club-card"]
+    "Young Ambitious": ["club-lloyds", "savings-plan", "ready-made-investments"],
+    "Family Planner": ["mortgage", "savings-plan", "club-lloyds", "ready-made-investments"],
+    "Lifestyle Seeker": ["club-lloyds", "ready-made-investments"]
 }
 
 # --- Session State ---
@@ -33,7 +35,7 @@ def load_products():
             "colleague_benefit": "As an LBG colleague, you get **1.5% fixed interest** and **zero down payment**."
         },
         {
-            "id": "club-card",
+            "id": "club-lloyds",
             "name": "Club Lloyds",
             "description": "Enjoy perks with Club Lloyds banking",
             "public_info": "Club Lloyds offers lifestyle rewards, cashback, and fee-free overdrafts.",
@@ -45,6 +47,13 @@ def load_products():
             "description": "Ideal for saving more",
             "public_info": "A smart savings product with auto deposits and interest bonuses.",
             "colleague_benefit": "LBG matches your savings by **5% every month**, up to £100."
+        },
+        {
+            "id": "ready-made-investments",
+            "name": "Ready-Made Investments",
+            "description": "Expert-managed investments to match your goals",
+            "public_info": "Let experts manage your money with flexible options based on your risk profile. Start from just £50/month.",
+            "colleague_benefit": "As a colleague, enjoy a **simplified onboarding journey** and **discounted investment management fees**."
         }
     ]
 
@@ -121,7 +130,10 @@ if selected_product_id:
         st.markdown("### 🤖 Ask the assistant")
         question = st.text_input("Ask a question about this product")
         if question:
-            st.info(f"Assistant: Thanks for your question — we’ll get back to you shortly!")
+            response = process_input(question, product['id'])
+            st.write("Response from the assistant:")
+            st.write(response)
+            #st.info(f"Assistant: Thanks for your question — we’ll get back to you shortly!")
 
         # Reviews
         if product["id"] not in st.session_state.reviews:
