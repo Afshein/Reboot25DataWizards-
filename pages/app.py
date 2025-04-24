@@ -27,7 +27,7 @@ client = AzureOpenAI(
 # Function to process user input and call the OpenAI API
 def process_input(user_input, product):
 
-    system_prompt = f"You are a banking assistant. Answer the user's query using only the following information. Responses should be be max 50 words. Text should be displayed in a digestable format using a title and bulleted lists, not just one big block. Use a friendly and professional tone. Information: {data[product]}"
+    system_prompt = f"You are a banking assistant. Answer the user's query using only the following information. Responses should be be max 50 words. Text should be displayed in a digestable format using a title and bulleted lists, not just one big block. Use a friendly and professional tone. Provide links to websites in your response. Information: {data[product]}"
 
     response = client.chat.completions.create(
         messages=[
