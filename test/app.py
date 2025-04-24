@@ -3,12 +3,8 @@ from openai import AzureOpenAI
 import json
 
 # Load the JSON file
-with open('data/CAG.json', 'r') as f:
+with open("data/CAG.json", "r") as f:
     data = json.load(f)
-
-
-
-
 
 endpoint = "https://team12hacker03.openai.azure.com/"
 model_name = "o3-mini"
@@ -33,33 +29,33 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)  # Allow requests from local HTML
 
-def process_input(user_input):
-    
+
+def process_input(user_input, system_prompt):
+
     response = client.chat.completions.create(
-    messages=[
-        {
-            "role": "system",
-            "content": system_prompt
-        },
-        {
-            "role": "user",
-            "content": user_input,
-        }
-    ],
-    max_completion_tokens=100000,
-    model=deployment
-)
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {
+                "role": "user",
+                "content": user_input,
+            },
+        ],
+        max_completion_tokens=100000,
+        model=deployment,
+    )
 
     response.choices[0].message.content
 
     return response.choices[0].message.content
 
-@app.route('/process', methods=['POST'])
+
+@app.route("/process", methods=["POST"])
 def process():
     data = request.json
-    user_input = data.get('input')
+    user_input = data.get("input")
     result = process_input(user_input)
-    return jsonify({'output': result})
+    return jsonify({"output": result})
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run(debug=True)
