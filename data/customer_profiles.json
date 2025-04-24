@@ -1,0 +1,32 @@
+[
+    {
+    "profile_id": "young_professional",
+    "name": "Ben",
+    "age": 28,
+    "annual_income": 72000,
+    "credit_score": 720,
+    "account_balance": 8500,
+    "total_debt": 35000,
+    "life_situation": "Young professional renting an apartment with student loans, looking to save for first home. Thinks about the details and how he can get the best deal."
+  },
+  {
+    "profile_id": "mid_career_family",
+    "name": "Rui",
+    "age": 42,
+    "annual_income": 115000,
+    "credit_score": 765,
+    "account_balance": 12500,
+    "total_debt": 340000,
+    "life_situation": "Married with two children, homeowner with established career, saving for children's education. Banked with us for 10+ years."
+  },
+  {
+    "profile_id": "pre_retirement",
+    "name": "Brooke",
+    "age": 58,
+    "annual_income": 135000,
+    "credit_score": 810,
+    "account_balance": 45000,
+    "total_debt": 95000,
+    "life_situation": "Empty nester approaching retirement, focusing on maximizing retirement savings and wealth preservation. Cares about brand loyalty and trust within a bank. Prefers to speak with a human."
+  }
+]
