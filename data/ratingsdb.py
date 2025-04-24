@@ -75,9 +75,11 @@ def read_rating(cursor, party_id, product_name):
 
 def get_average_product_ratings(cursor):
     sql = """
-    SELECT product, AVG(rating) as average_rating
+    SELECT product, AVG(rating) as average_rating, COUNT(*) as rating_count
     FROM ratings
     GROUP BY product;
     """
     cursor.execute(sql)
-    return {row[0]: row[1] for row in cursor.fetchall()}
+    return {row[0]: (row[1], row[2]) for row in cursor.fetchall()}
+
+print(get_average_product_ratings(cursor))
