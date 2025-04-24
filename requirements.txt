@@ -1,0 +1,23 @@
+# Core App Framework
+streamlit==1.33.0
+
+# OpenAI API for GenAI Q&A
+openai==1.18.0
+
+# Data Handling
+pandas==2.2.1
+
+# Optional: For emojis, JSON processing, etc.
+emoji==2.8.0
+
+# Optional: For making HTTP requests (if calling external APIs)
+requests==2.31.0
+
+# Optional: Rich text formatting in markdown/html
+markdown-it-py==3.0.0
+
+# For loading JSON perks/product data (built-in to Python, just for note)
+# json
+
+# Optional for image display and layout tweaks
+Pillow==10.2.0
