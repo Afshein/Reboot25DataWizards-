@@ -97,5 +97,3 @@ def add_synthetic_ratings(cursor, num_entries):
         # Use an SQL query to insert values
         add_entry(cursor, party_id, product_name, rating)
     conn.commit()
-
-add_synthetic_ratings(cursor, 10000)
