@@ -43,7 +43,9 @@ def add_entry(cursor, party_id, product_name, rating):
     INSERT INTO dbo.ratings (party_id, product, rating)
     VALUES (\'{party_id}\', \'{product_name}\', {rating});
     """
+
     cursor.execute(sql)
+    conn.commit()
 
 def read_all_entries(cursor):
     
@@ -82,4 +84,16 @@ def get_average_product_ratings(cursor):
     cursor.execute(sql)
     return {row[0]: (row[1], row[2]) for row in cursor.fetchall()}
 
-print(get_average_product_ratings(cursor))
+import random
+
+# Function to add synthetic ratings
+def add_synthetic_ratings(cursor, num_entries):
+    products_list = ["club-lloyds", "ready-made-investments", "mortgage", "savings-plan"]
+    for _ in range(num_entries):
+        party_id = str(random.randint(1, 10000000))  # Example user IDs from 1 to 100
+        product_name = random.choice(products_list)
+        rating = random.choices([1, 2, 3, 4, 5], weights=[5, 5, 10, 25, 55])[0]  # Ratings between 1 and 5
+        
+        # Use an SQL query to insert values
+        add_entry(cursor, party_id, product_name, rating)
+    conn.commit()
