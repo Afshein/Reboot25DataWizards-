@@ -21,3 +21,6 @@ markdown-it-py==3.0.0
 
 # Optional for image display and layout tweaks
 Pillow==10.2.0
+
+#for connecting to db
+pypyodbc
