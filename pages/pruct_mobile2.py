@@ -1,6 +1,7 @@
 import streamlit as st
 import random
 import json
+import os
 from app import process_input
 from openai import AzureOpenAI
 
@@ -15,6 +16,17 @@ def load_data():
         customer_profiles = json.load(f)
     
     return product_data, customer_profiles
+
+# --- Save Profiles ---
+def save_profiles(profiles):
+    """Save profiles back to the JSON file"""
+    try:
+        with open('data/customer_profiles.json', 'w') as f:
+            json.dump(profiles, f, indent=2)
+        return True
+    except Exception as e:
+        print(f"Error saving profiles: {e}")
+        return False
 
 # --- Azure OpenAI Setup ---
 def get_openai_client():
@@ -50,7 +62,8 @@ def generate_product_ranking(customer_profile, available_products):
     {', '.join([p['id'] for p in available_products])}
 
     For each product, rate its suitability for this customer on a scale of 1-10.
-    Provide a brief explanation (max 30 words) of why the product is or isn't suitable.
+    Provide a brief explanation (max 30 words) of why the product is suitable, writing directly to the user
+    as "you" or "your" (e.g., "This helps you save for your first home" not "This helps the customer save for their first home").
     
     Format your response as JSON with the following structure:
     {{
@@ -108,6 +121,12 @@ if "selected_profile" not in st.session_state:
     st.session_state.selected_profile = None
 if "rankings" not in st.session_state:
     st.session_state.rankings = None
+if "edit_mode" not in st.session_state:
+    st.session_state.edit_mode = False
+if "create_mode" not in st.session_state:
+    st.session_state.create_mode = False
+if "profile_changes" not in st.session_state:
+    st.session_state.profile_changes = False
 
 # --- Product Data ---
 def load_products():
@@ -180,6 +199,117 @@ def draw_star_rating(product_id):
             st.session_state.ratings[product_id] = i
             st.rerun()
 
+# --- Profile Editor Components ---
+def edit_profile_form(profile, all_profiles):
+    """Form for editing an existing profile"""
+    with st.form(key="edit_profile_form"):
+        st.subheader(f"Edit Profile: {profile['name']}")
+        
+        name = st.text_input("Name", value=profile['name'])
+        age = st.number_input("Age", min_value=18, max_value=100, value=profile['age'])
+        annual_income = st.number_input("Annual Income (£)", min_value=0, max_value=1000000, value=profile['annual_income'])
+        credit_score = st.number_input("Credit Score", min_value=300, max_value=850, value=profile['credit_score'])
+        account_balance = st.number_input("Account Balance (£)", min_value=0, max_value=1000000, value=profile['account_balance'])
+        total_debt = st.number_input("Total Debt (£)", min_value=0, max_value=10000000, value=profile['total_debt'])
+        life_situation = st.text_area("Life Situation", value=profile['life_situation'], height=100)
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            submit = st.form_submit_button("Save Changes")
+        with col2:
+            cancel = st.form_submit_button("Cancel")
+        
+        if cancel:
+            st.session_state.edit_mode = False
+            st.rerun()
+        
+        if submit:
+            # Create updated profile
+            updated_profile = {
+                "profile_id": profile["profile_id"],
+                "name": name,
+                "age": age,
+                "annual_income": annual_income,
+                "credit_score": credit_score,
+                "account_balance": account_balance,
+                "total_debt": total_debt,
+                "life_situation": life_situation
+            }
+            
+            # Update profile in the list
+            for i, p in enumerate(all_profiles):
+                if p["profile_id"] == profile["profile_id"]:
+                    all_profiles[i] = updated_profile
+                    break
+            
+            # Save changes
+            if save_profiles(all_profiles):
+                st.session_state.selected_profile = updated_profile
+                st.session_state.edit_mode = False
+                st.session_state.profile_changes = True
+                st.rerun()
+            else:
+                st.error("Failed to save changes. Please try again.")
+
+def create_profile_form(all_profiles):
+    """Form for creating a new profile"""
+    with st.form(key="create_profile_form"):
+        st.subheader("Create New Profile")
+        
+        name = st.text_input("Name")
+        age = st.number_input("Age", min_value=18, max_value=100, value=30)
+        annual_income = st.number_input("Annual Income (£)", min_value=0, max_value=1000000, value=50000)
+        credit_score = st.number_input("Credit Score", min_value=300, max_value=850, value=700)
+        account_balance = st.number_input("Account Balance (£)", min_value=0, max_value=1000000, value=5000)
+        total_debt = st.number_input("Total Debt (£)", min_value=0, max_value=10000000, value=20000)
+        life_situation = st.text_area("Life Situation", value="", height=100)
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            submit = st.form_submit_button("Create Profile")
+        with col2:
+            cancel = st.form_submit_button("Cancel")
+        
+        if cancel:
+            st.session_state.create_mode = False
+            st.rerun()
+        
+        if submit:
+            if not name:
+                st.error("Name is required")
+                return
+            
+            # Create profile ID from name
+            profile_id = name.lower().replace(" ", "_")
+            
+            # Check if profile ID already exists
+            if any(p["profile_id"] == profile_id for p in all_profiles):
+                profile_id = f"{profile_id}_{random.randint(1, 999)}"
+            
+            # Create new profile
+            new_profile = {
+                "profile_id": profile_id,
+                "name": name,
+                "age": age,
+                "annual_income": annual_income,
+                "credit_score": credit_score,
+                "account_balance": account_balance,
+                "total_debt": total_debt,
+                "life_situation": life_situation
+            }
+            
+            # Add to profiles list
+            all_profiles.append(new_profile)
+            
+            # Save changes
+            if save_profiles(all_profiles):
+                st.session_state.selected_profile = new_profile
+                st.session_state.create_mode = False
+                st.session_state.profile_changes = True
+                st.rerun()
+            else:
+                st.error("Failed to create profile. Please try again.")
+
 # --- Setup ---
 st.set_page_config(page_title="Your LBG Perks", layout="centered")
 query_params = st.query_params
@@ -189,25 +319,77 @@ selected_product_id = query_params.get("product")
 all_products = load_products()
 product_data, customer_profiles = load_data()
 
-# --- Sidebar for customer profile selection ---
+# --- Sidebar for profile management ---
 with st.sidebar:
-    st.title("👤 Customer Profile")
+    st.title("👤 Profile Management")
     
-    profile_options = {p["profile_id"]: f"{p['name']}, {p['age']} - {p['life_situation'].split('.')[0]}" 
-                      for p in customer_profiles}
+    # Profile actions
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("✏️ Edit Profile", disabled=st.session_state.create_mode or not st.session_state.selected_profile):
+            st.session_state.edit_mode = not st.session_state.edit_mode
+            st.rerun()
+    with col2:
+        if st.button("➕ New Profile", disabled=st.session_state.edit_mode):
+            st.session_state.create_mode = not st.session_state.create_mode
+            st.rerun()
     
-    selected_id = st.selectbox("Select a profile:", 
-                              options=list(profile_options.keys()),
-                              format_func=lambda x: profile_options[x])
+    # Handle edit mode
+    if st.session_state.edit_mode and st.session_state.selected_profile:
+        edit_profile_form(st.session_state.selected_profile, customer_profiles)
     
-    # Get the full profile
-    selected_profile = next((p for p in customer_profiles if p["profile_id"] == selected_id), None)
-    st.session_state.selected_profile = selected_profile
+    # Handle create mode
+    elif st.session_state.create_mode:
+        create_profile_form(customer_profiles)
     
-    # Generate recommendations when profile changes or button is clicked
-    if st.button("Update Recommendations") or (selected_profile and selected_profile != st.session_state.get("last_profile")):
-        st.session_state.rankings = generate_product_ranking(selected_profile, all_products)
-        st.session_state["last_profile"] = selected_profile
+    # Normal profile selection
+    else:
+        profile_options = {p["profile_id"]: f"{p['name']}, {p['age']} - {p['life_situation'].split('.')[0]}" 
+                          for p in customer_profiles}
+        
+        selected_id = st.selectbox("Select a profile:", 
+                                  options=list(profile_options.keys()),
+                                  format_func=lambda x: profile_options[x])
+        
+        # Get the full profile
+        selected_profile = next((p for p in customer_profiles if p["profile_id"] == selected_id), None)
+        
+        # Create a copy that can be edited
+        if selected_profile and (st.session_state.selected_profile is None or selected_profile["profile_id"] != st.session_state.selected_profile["profile_id"]):
+            st.session_state.selected_profile = selected_profile.copy()
+        
+        # Add ability to edit life situation directly
+        if st.session_state.selected_profile:
+            st.subheader("Quick Edit")
+            
+            # Edit life situation
+            edited_situation = st.text_area(
+                "Your life situation:", 
+                value=st.session_state.selected_profile["life_situation"],
+                height=100
+            )
+            
+            # Update the profile with edited values
+            if edited_situation != st.session_state.selected_profile["life_situation"]:
+                st.session_state.selected_profile["life_situation"] = edited_situation
+                
+                # Find and update the profile in the full list
+                for i, p in enumerate(customer_profiles):
+                    if p["profile_id"] == st.session_state.selected_profile["profile_id"]:
+                        customer_profiles[i]["life_situation"] = edited_situation
+                        if save_profiles(customer_profiles):
+                            st.success("Life situation updated!")
+                            st.session_state.profile_changes = True
+                        else:
+                            st.error("Failed to save changes.")
+                        break
+        
+        # Generate recommendations when profile changes or button is clicked
+        if st.button("Update Recommendations") or st.session_state.profile_changes:
+            if st.session_state.selected_profile:
+                st.session_state.rankings = generate_product_ranking(st.session_state.selected_profile, all_products)
+                st.session_state.profile_changes = False
+                st.rerun()
 
 # --- Product Detail View ---
 if selected_product_id:
@@ -228,7 +410,8 @@ if selected_product_id:
                                  if r["product_id"] == selected_product_id), None)
             
             if product_ranking:
-                st.info(f"**Why this might be good for {st.session_state.selected_profile['name']}:** {product_ranking['explanation']}")
+                explanation_text = product_ranking['explanation']
+                st.info(f"**Why this might be good for you:** {explanation_text}")
 
         # Assistant
         st.markdown("### 🤖 Ask the assistant")
@@ -306,7 +489,7 @@ else:
     # Show profile-specific message if profile is selected
     if st.session_state.selected_profile:
         profile = st.session_state.selected_profile
-        st.success(f"Showing personalized recommendations for {profile['name']}, {profile['age']} - {profile['life_situation'].split('.')[0]}")
+        st.success(f"Showing personalized recommendations based on your profile: {profile['age']} years old - {profile['life_situation'].split('.')[0]}")
     
     # If we have rankings, use them to sort products, otherwise use the original order
     if st.session_state.rankings:
@@ -348,16 +531,27 @@ else:
         else:
             card_bg = "#f9f9f9"
             card_border = "1px solid #ccc"
+        
+        # Create container for the whole product section
+        with st.container():
+            # Use columns to create the card and make it clickable
+            col1, col2 = st.columns([0.9, 0.1])
+            with col1:
+                st.markdown(f"#### {product['name']} {'✅' if product['id'] in st.session_state.viewed else ''}")
+                st.write(product['description'])
+                st.write(f"⭐ **{stats['rating']} / 5** from **{stats['votes']}** votes")
+                
+                if score_display:
+                    st.write(f"**Match for you:** {score_display}")
+                
+                if explanation:
+                    st.info(f"**Why:** {explanation}")
             
-        # Create a card with additional personalization information
-        st.markdown(f"""
-        <a href="{link}" style="text-decoration: none; color: inherit;">
-            <div style="border: {card_border}; border-radius: 10px; padding: 16px; margin-bottom: 16px; background-color: {card_bg};">
-                <h4 style="color:#005a30;">{product['name']} {"✅" if product["id"] in st.session_state.viewed else ""}</h4>
-                <p style="margin:0;color:#444;">{product['description']}</p>
-                <p style="margin:4px 0 0 0;"><strong>⭐ {stats['rating']} / 5</strong> from {stats['votes']} votes</p>
-                {f'<p style="margin-top:8px;"><strong>Match for {user_name}:</strong> {score_display}</p>' if score_display else ''}
-                {f'<p style="margin-top:4px;color:#444;"><em>Why: {explanation}</em></p>' if explanation else ''}
-            </div>
-        </a>
-        """, unsafe_allow_html=True)
+            with col2:
+                # Create a vertical centered View button
+                if st.button("View", key=f"view_{product['id']}", use_container_width=True):
+                    st.query_params["product"] = product['id']
+                    st.rerun()
+            
+            # Add a separator line between products
+            st.markdown("---")
