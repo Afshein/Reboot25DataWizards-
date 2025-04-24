@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Input Processor</title>
+</head>
+<body>
+  <h1>Send Input to Backend</h1>
+  <input type="text" id="userInput" placeholder="Type something..." />
+  <button onclick="sendInput()">Submit</button>
+  <p id="output"></p>
+
+  <script>
+    async function sendInput() {
+      const input = document.getElementById("userInput").value;
+
+      const response = await fetch("http://127.0.0.1:5000/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: input })
+      });
+
+      const data = await response.json();
+      document.getElementById("output").innerText = data.output;
+    }
+  </script>
+</body>
+</html>
