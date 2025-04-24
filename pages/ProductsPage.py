@@ -10,21 +10,43 @@ def load_products():
     ]
 
 # App config
-st.set_page_config(page_title="Colleague Perks", layout="wide")
+st.set_page_config(page_title="Colleague Perks")
 st.title("💼 Financial Perks for Colleagues")
 
-# Layout: 3 columns for card-style buttons
-products = load_products()
-cols = st.columns(3)
 
-for index, product in enumerate(products):
-    with cols[index % 3]:
-        st.markdown(f"""
-            <div style='background-color:#d4edda;padding:20px;border-radius:12px;margin-bottom:15px;'>
-                <h4>{product['name']}</h4>
-                <p style='font-size:14px;'>{product['description']}</p>
-                <form action="?product={product['id']}" method="get">
-                    <input type="submit" value="View" style="background-color:#28a745;border:none;padding:8px 16px;color:white;border-radius:6px;">
-                </form>
-            </div>
-        """, unsafe_allow_html=True)
+products = load_products()
+
+
+for product in products:
+    # Just for demo purposes – simulate a rating (1 to 5)
+    rating = product.get("rating", 4)  # or random.randint(1, 5)
+
+    stars = "⭐" * rating + "☆" * (5 - rating)  # Optional: filled + empty stars
+
+    st.markdown(f"""
+        <form action="" method="get" style="margin:0;">
+            <input type="hidden" name="product" value="{product['id']}"/>
+            <button type="submit" style="
+                display: flex;
+                align-items: center;
+                background-color:#006a4d;
+                border:none;
+                padding:20px;
+                border-radius:12px;
+                margin-bottom:15px;
+                width:100%;
+                text-align:left;
+                cursor:pointer;
+            ">
+                <div style="margin-right:20px; font-size:18px; min-width:80px;">
+                    {stars}
+                </div>
+                <div style="flex-grow:1; text-align:left;">
+                    <h4 style="margin:0;">{product['name']}</h4>
+                    <p style='font-size:14px;margin:8px 0 0;'>{product['description']}</p>
+                </div>
+            </button>
+        </form>
+    """, unsafe_allow_html=True)
+
+
