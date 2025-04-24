@@ -20,7 +20,7 @@ def main():
         print("Requirements installed successfully.")
     
     # Check if the target file exists
-    target_file = os.path.join("pages", "pruct_mobile2.py")
+    target_file = os.path.join("pages", "pruct_mobile.py")
     if not os.path.exists(target_file):
         # Copy our enhanced file to the target location
         source_file = os.path.join("pages", "pruct_mobile.py")

@@ -1,5 +1,5 @@
 [
-    {
+  {
     "profile_id": "young_professional",
     "name": "Ben",
     "age": 28,
@@ -7,7 +7,7 @@
     "credit_score": 720,
     "account_balance": 8500,
     "total_debt": 35000,
-    "life_situation": "Young professional renting an apartment with student loans, looking to save for first home. Thinks about the details and how he can get the best deal."
+    "life_situation": "Young professional, looking to save for first home. Thinks about the details and how he can get the best deal."
   },
   {
     "profile_id": "mid_career_family",
